@@ -4,8 +4,12 @@ import {
     PrimaryGeneratedColumn,
     ManyToOne,
     JoinColumn,
-    Index
+    Index,
+    AfterLoad,
+    AfterInsert,
+    AfterUpdate
 } from "typeorm"
+import { IsOptional } from 'class-validator';
 
 import { Room } from "../room";
 import { User } from "../user";
@@ -35,7 +39,7 @@ export class Reservation {
     @Column({
         nullable: false,
         type: 'datetime',
-        default: 'CURRENT_TIMESTAMP'
+        default: () => 'CURRENT_TIMESTAMP'
     })
     @Index()
     created: Date
@@ -53,13 +57,23 @@ export class Reservation {
         type: 'date',
     })
     @Index()
-    from: Date
+    fromDate: Date
 
     @Column({
         nullable: false,
         type: 'date',
     })
     @Index()
-    to: Date
+    toDate: Date
+
+    @IsOptional()
+    nights: number;
+
+    @AfterLoad()
+    @AfterInsert()
+    @AfterUpdate()
+    generateNights(): void {
+        this.nights = Math.floor((this.toDate.getTime() - this.fromDate.getTime()) / (1000 * 3600 * 24));
+    }
 
 }

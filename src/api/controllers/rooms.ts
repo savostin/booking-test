@@ -3,12 +3,7 @@ import { Room, RoomFacilities } from "../../models/room";
 import { HotelFacilities } from "../../models/hotel";
 import { Reservation } from "../../models/reservation";
 import { query } from "express-validator";
-import { AppDataSource } from "../../database";
-
-export enum roomsFindRequestSort {
-    DATE = <any>"date",
-    PRICE = <any>"price",
-}
+import { AppDataSource, Brackets } from "../../database";
 
 export interface roomsFindRequest {
     from: Date;
@@ -16,8 +11,6 @@ export interface roomsFindRequest {
     places: number,
     limit?: number,
     page?: number,
-    order?: roomsFindRequestSort | null,
-    desc?: boolean | null,
     roomFacilities?: RoomFacilities[] | null,
     hotelFacilities?: HotelFacilities[] | null
 }
@@ -39,8 +32,7 @@ export const roomsFindValidator = [
     query("places").exists().isInt({ gt: 0 }),
     query("limit").isInt({ gt: 0, lt: parseInt(process.env.API_ROOMS_LIMIT as string) || 100 }).optional(true),
     query("page").optional(true).isInt({ gt: 0, lt: 100 }),
-    query("order").optional(true).trim().isIn(Object.values(roomsFindRequestSort)),
-    query("desc").optional(true).trim().isBoolean(),
+    // TODO check order by and desc when added
     // TODO: room and hotel facilities
 ];
 
@@ -49,16 +41,27 @@ export class ControllerRooms {
     @Get("find")
     public async find(req: roomsFindRequest): Promise<roomsFindResponse> {
         const manager = AppDataSource.manager;
-        const limit: number = (req.limit || parseInt(process.env.API_ROOMS_LIMIT as string)) || 100;
+        const limit: number = (req.limit || parseInt(process.env.API_ROOMS_LIMIT as string)) || 10;
         const page: number = req.page || 1;
-        const order: string = req.order || roomsFindRequestSort.DATE;
-        const rooms: Room[] = await manager.createQueryBuilder(Room, 'room')
+
+        const rooms: Room[] = await manager.getRepository(Room).createQueryBuilder('room')
             .innerJoinAndSelect("room.hotel", "hotel")
-            .where("isActive = :active", { active: true })
+            .where("isActive = 1")
             .andWhere("places >= :places", { places: req.places })
-            .orderBy(order, req.desc ? "ASC" : "DESC")
-            .limit(limit)
-            .offset((page - 1) * limit)
+            .andWhere(db => `room.id NOT IN (${db.subQuery()
+                .select('roomId')
+                .from(Reservation, 'reservations')
+                .where(new Brackets((qb) => {
+                    qb.where('fromDate BETWEEN :from AND :to', { from: req.from.toDateString(), to: req.to.toDateString() })
+                        .orWhere('toDate BETWEEN :from AND :to', { from: req.from.toDateString(), to: req.to.toDateString() })
+                })
+                )
+                .andWhere('status NOT IN (:...status)', { status: ['CANCELLED', 'CREATED'] })
+                .getQuery()})`)
+
+            .skip((page - 1) * limit)
+            .take(limit)
+            .cache(parseInt(process.env.API_ROOMS_CACHE as string) || 1000)
             .getMany();
 
         return {

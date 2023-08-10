@@ -4,6 +4,7 @@ import { User, randomKey } from "../models/user";
 import { Hotel } from "../models/hotel";
 import { Room } from "../models/room";
 import { EntityManager } from "typeorm";
+import { Reservation, ReservaionStatus } from "../models/reservation";
 
 const demoParams = {
     hotels: {
@@ -15,8 +16,8 @@ const demoParams = {
         }
     },
     rooms: {
-        min: 10,
-        max: 20
+        min: 3,
+        max: 10
     },
     users: 10,
     constKey: 'd4d507545d2e0be371bdea707c814c830c6f54baf3bef716e2f9e90a2bd67e4a',
@@ -40,6 +41,7 @@ const postcode = (): string => `${randomChar()}${randomInt(1, 99)} ${randomChar(
 
 const InitDemoData = async () => {
     const manager: EntityManager = AppDataSource.manager;
+    await manager.clear(Reservation);
     await manager.clear(Room);
     await manager.clear(Hotel);
 
@@ -71,6 +73,30 @@ const InitDemoData = async () => {
         user.authKey = ui === 0 ? demoParams.constKey : randomKey();
         await manager.save(user);
     });
+
+    range(0, 10).forEach(async (i: number) => {
+        const room = await manager.createQueryBuilder(Room, 'room')
+            .orderBy('RANDOM()')
+            .getOneOrFail();
+        const user = await manager.createQueryBuilder(User, 'user')
+            .orderBy('RANDOM()')
+            .getOneOrFail();
+        const days = randomInt(1, 30);
+        const skip = randomInt(1, 30);
+        const from = new Date();
+        from.setDate(from.getDate() + skip);
+        const to = new Date();
+        to.setDate(to.getDate() + skip + days);
+        const reservation = new Reservation();
+        reservation.fromDate = from;
+        reservation.toDate = to;
+        reservation.room = room;
+        reservation.user = user;
+        reservation.status = getRandomElement(Object.keys(ReservaionStatus));
+        await manager.save(reservation);
+    });
+
+
 }
 
 export { InitDemoData };

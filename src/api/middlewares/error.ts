@@ -8,7 +8,7 @@ const log = Logger('API');
 
 process.on('unhandledRejection', (reason: Error | any) => {
     log.error(`Unhandled Rejection: ${reason.message || reason}`);
-    throw new InternalServerError(reason.message || reason);
+    //throw new InternalServerError(reason.message || reason); // TODO error handling
 });
 
 const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {

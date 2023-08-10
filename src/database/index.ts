@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { DataSource } from "typeorm"
+import { DataSource, Brackets } from "typeorm"
 import { User } from "../models/user"
 import { Hotel } from "../models/hotel"
 import { Room } from "../models/room"
@@ -13,4 +13,4 @@ const AppDataSource:DataSource = new DataSource({
     logging: ["error"]
 })
 
-export { AppDataSource };
+export { AppDataSource, Brackets };
