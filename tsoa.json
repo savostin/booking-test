@@ -1,0 +1,9 @@
+{
+    "entryFile": "src/index.ts",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "spec": {
+        "outputDirectory": "src/api/swagger",
+        "specFileBaseName": "1.0.1",
+        "specVersion": 3
+    }
+}
