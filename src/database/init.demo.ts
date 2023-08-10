@@ -91,6 +91,7 @@ const InitDemoData = async () => {
         reservation.fromDate = from;
         reservation.toDate = to;
         reservation.room = room;
+        reservation.places = randomInt(1, room.places);
         reservation.user = user;
         reservation.status = getRandomElement(Object.keys(ReservaionStatus));
         await manager.save(reservation);

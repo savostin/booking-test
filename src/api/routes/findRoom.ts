@@ -31,4 +31,4 @@ const RouteFindRoom = (router: IRouter) => {
     return router;
 };
 
-export default RouteFindRoom;
+export { RouteFindRoom };

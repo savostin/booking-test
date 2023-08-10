@@ -66,6 +66,14 @@ export class Reservation {
     @Index()
     toDate: Date
 
+    @Column({
+        unsigned: true,
+        nullable: false,
+        type: 'int',
+    })
+    places: number
+
+/* Nice to have a virtual column with number of nights: 
     @IsOptional()
     nights: number;
 
@@ -75,5 +83,5 @@ export class Reservation {
     generateNights(): void {
         this.nights = Math.floor((this.toDate.getTime() - this.fromDate.getTime()) / (1000 * 3600 * 24));
     }
-
+*/
 }

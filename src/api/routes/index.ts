@@ -3,9 +3,10 @@ import RouteGroup from 'express-route-grouping';
 import { NextFunction, Request, Response } from 'express';
 import swaggerUi from "swagger-ui-express";
 
-import RouteFindRoom from './findRoom';
-import { RouteMakeReservation } from './makeReservation'
 import { ErrorResponse } from '../responses';
+import { RouteFindRoom } from './findRoom';
+import { RouteMakeReservation } from './makeReservation'
+import { RouteChangeReservation } from './changeReservation';
 
 
 const root = new RouteGroup('/', Router());
@@ -16,6 +17,7 @@ root.group((process.env.APP_VERSION as string), api => {
     })
     api.group('reservation', req => {
         RouteMakeReservation(req);
+        RouteChangeReservation(req);
     })
 
     api.get('swagger.json', (req: Request, res: Response, next: NextFunction) => {
