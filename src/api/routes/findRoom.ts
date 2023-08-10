@@ -3,19 +3,19 @@ import { NextFunction, Request, Response, IRouter } from 'express';
 import { validationResult } from 'express-validator';
 
 import { authHandler } from '../middlewares/auth';
-import { ControllerRooms, roomsFindRequest, roomsFindValidator } from "../controllers/rooms";
+import { ControllerRoom, roomFindRequest, roomFindValidator } from "../controllers/room";
 import { NotAcceptableError } from '../responses';
 
 
-const RouteFindRooms = (router: IRouter) => {
-    router.get('find', authHandler, roomsFindValidator, async (req: Request, res: Response, next: NextFunction) => {
+const RouteFindRoom = (router: IRouter) => {
+    router.get('find', authHandler, roomFindValidator, async (req: Request, res: Response, next: NextFunction) => {
         const invalid = validationResult(req);
         if (!invalid.isEmpty()) {
             return next(new NotAcceptableError(invalid.array().at(0)?.path)); // TODO more information about the error
         }
 
-        const controller: ControllerRooms = new ControllerRooms();
-        const search: roomsFindRequest = {
+        const controller: ControllerRoom = new ControllerRoom();
+        const search: roomFindRequest = {
             from: new Date(req.query.from as string),
             to: new Date(req.query.to as string),
             places: parseInt(req.query.places as string),
@@ -31,4 +31,4 @@ const RouteFindRooms = (router: IRouter) => {
     return router;
 };
 
-export default RouteFindRooms;
+export default RouteFindRoom;

@@ -3,18 +3,19 @@ import RouteGroup from 'express-route-grouping';
 import { NextFunction, Request, Response } from 'express';
 import swaggerUi from "swagger-ui-express";
 
-import RouteFindRooms from './findRooms';
+import RouteFindRoom from './findRoom';
+import { RouteMakeReservation } from './makeReservation'
 import { ErrorResponse } from '../responses';
-//import { RouteHotel } from './hotel'
-//import { RouteUser } from './user'
-//import { RouteReservation } from './reservation'
 
 
 const root = new RouteGroup('/', Router());
 
 root.group((process.env.APP_VERSION as string), api => {
-    api.group('rooms', hello => {
-        RouteFindRooms(hello);
+    api.group('room', req => {
+        RouteFindRoom(req);
+    })
+    api.group('reservation', req => {
+        RouteMakeReservation(req);
     })
 
     api.get('swagger.json', (req: Request, res: Response, next: NextFunction) => {

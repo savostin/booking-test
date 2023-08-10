@@ -5,7 +5,7 @@ import { Reservation } from "../../models/reservation";
 import { query } from "express-validator";
 import { AppDataSource, Brackets } from "../../database";
 
-export interface roomsFindRequest {
+export interface roomFindRequest {
     from: Date;
     to: Date;
     places: number,
@@ -15,14 +15,14 @@ export interface roomsFindRequest {
     hotelFacilities?: HotelFacilities[] | null
 }
 
-export interface roomsFindResponse {
+export interface roomFindResponse {
     rooms: Room[]
 }
 
-export const roomsFindValidator = [
+export const roomFindValidator = [
     query("from").exists().trim().isDate().isAfter((new Date()).toString()),
     query("to").exists().trim().isDate().isAfter((new Date()).toString()).custom((sd, { req }) => {
-        const from: Date = new Date(req.query.from ?? null);
+        const from: Date = new Date(req.query?.from ?? null);
         const to: Date = new Date(sd);
         if (to <= from) {
             throw new Error('End date must be greater than start date');
@@ -36,10 +36,10 @@ export const roomsFindValidator = [
     // TODO: room and hotel facilities
 ];
 
-@Route("rooms")
-export class ControllerRooms {
+@Route("room")
+export class ControllerRoom {
     @Get("find")
-    public async find(req: roomsFindRequest): Promise<roomsFindResponse> {
+    public async find(req: roomFindRequest): Promise<roomFindResponse> {
         const manager = AppDataSource.manager;
         const limit: number = (req.limit || parseInt(process.env.API_ROOMS_LIMIT as string)) || 10;
         const page: number = req.page || 1;

@@ -29,15 +29,19 @@ app.use(apiHandlerBefore);
 app.use(`/api`, Router);
 app.use(errorHandler);
 
-AppDataSource.initialize()
-    .then(() => InitDemoData())
-    .then(() => {
-        app.listen(WEB_PORT, () => {
-            log.info(`Listening on port ${WEB_PORT}`);
-        })
-    })
-    .catch((err: Error) => {
-        log.error(err);
-    })
+/** For testing purpose - delete database each start: */
+import fs from "node:fs/promises"
+fs.unlink(process.env.DB_DATABASE as string).then(() => {
 
+    AppDataSource.initialize()
+        .then(() => InitDemoData())
+        .then(() => {
+            app.listen(WEB_PORT, () => {
+                log.info(`Listening on port ${WEB_PORT}`);
+            })
+        })
+        .catch((err: Error) => {
+            log.error(err);
+        })
+});
 
