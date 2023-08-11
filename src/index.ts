@@ -24,6 +24,7 @@ const WEB_PORT: number = parseInt(process.env.WEB_PORT as string, 10);
 const app: Application = express();
 app.use(helmet());
 app.use(cors());
+app.use(express.static('public'));
 app.use(express.json());
 app.use(apiHandlerBefore);
 app.use(`/api`, Router);
