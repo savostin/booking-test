@@ -1,4 +1,4 @@
-import { Put, Post, Route } from "tsoa";
+import { Put, Post, Route, Body, Security, Hidden, Query } from "tsoa";
 import { Room } from "../../models/room";
 import { ReservaionStatus, Reservation } from "../../models/reservation";
 import { body } from "express-validator";
@@ -10,7 +10,6 @@ export interface reservationMakeRequest {
     to: Date;
     places: number,
     roomId: number,
-    user: User
 }
 
 export interface reservationMakeResponse {
@@ -37,7 +36,6 @@ export interface reservationChangeRequest {
     to: Date;
     places: number,
     reservationId: number,
-    user: User,
 }
 
 export interface reservationChangeResponse {
@@ -63,7 +61,6 @@ export const reservationChangeValidator = [
 
 export interface reservationCancelRequest {
     reservationId: number,
-    user: User,
 }
 
 export interface reservationCancelResponse {
@@ -76,10 +73,11 @@ export const reservationCancelValidator = [
 
 
 
-@Route("reservation")
+@Route(`api/v1/reservation`)
 export class ControllerReservation {
+    @Security("apiKey")
     @Put("make")
-    public async make(req: reservationMakeRequest): Promise<reservationMakeResponse | false> {
+    public async make(@Body() req: reservationMakeRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationMakeResponse | false> {
         const manager = AppDataSource.manager;
         try {
 
@@ -107,7 +105,7 @@ export class ControllerReservation {
                 reservation.toDate = req.to;
                 reservation.room = room;
                 reservation.places = req.places;
-                reservation.user = req.user;
+                reservation.user = user;
                 await manager.save(reservation);
                 return { result: reservation };
             }
@@ -117,14 +115,15 @@ export class ControllerReservation {
         return false;
     }
 
+    @Security("apiKey")
     @Post("change")
-    public async change(req: reservationChangeRequest): Promise<reservationChangeResponse | false> {
+    public async change(@Body() req: reservationChangeRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationChangeResponse | false> {
         const manager = AppDataSource.manager;
         try {
             const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation1')
                 .innerJoin('reservation1.room', 'room')
                 .where("reservation1.id = :id", { id: req.reservationId })
-                .andWhere('reservation1.userId = :user', { user: req.user.id })
+                .andWhere('reservation1.userId = :user', { user: user?.id })
                 .andWhere("status = 'CREATED'")
                 .andWhere("room.places >= :places", { places: req.places })
                 .andWhere(db => `NOT EXISTS ${db.subQuery()
@@ -155,13 +154,14 @@ export class ControllerReservation {
         return false;
     }
 
+    @Security("apiKey")
     @Post("cancel")
-    public async cancel(req: reservationCancelRequest): Promise<reservationCancelResponse | false> {
+    public async cancel(@Body() req: reservationCancelRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationCancelResponse | false> {
         const manager = AppDataSource.manager;
         try {
             const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation')
                 .where("reservation.id = :id", { id: req.reservationId })
-                .andWhere('reservation.userId = :user', { user: req.user.id })
+                .andWhere('reservation.userId = :user', { user: user?.id })
                 .andWhere("status NOT IN (:...status)", { status: [ReservaionStatus.FULFILLED] })
                 .cache(false)
                 .getOneOrFail();

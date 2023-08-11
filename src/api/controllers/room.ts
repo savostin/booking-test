@@ -1,6 +1,6 @@
-import { Get, Route } from "tsoa";
-import { Room, RoomFacilities } from "../../models/room";
-import { HotelFacilities } from "../../models/hotel";
+import { Get, Route, Queries, Security, Hidden, Query } from "tsoa";
+import { Room } from "../../models/room";
+import { User } from "../../models/user";
 import { Reservation } from "../../models/reservation";
 import { query } from "express-validator";
 import { AppDataSource, Brackets } from "../../database";
@@ -11,8 +11,8 @@ export interface roomFindRequest {
     places: number,
     limit?: number,
     page?: number,
-    roomFacilities?: RoomFacilities[] | null,
-    hotelFacilities?: HotelFacilities[] | null
+    // roomFacilities?: RoomFacilities[] | null,
+    // hotelFacilities?: HotelFacilities[] | null
 }
 
 export interface roomFindResponse {
@@ -36,10 +36,11 @@ export const roomFindValidator = [
     // TODO: room and hotel facilities
 ];
 
-@Route("room")
+@Route(`api/v1/room`)
 export class ControllerRoom {
     @Get("find")
-    public async find(req: roomFindRequest): Promise<roomFindResponse> {
+    @Security("apiKey")
+    public async find(@Queries() req: roomFindRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<roomFindResponse> {
         const manager = AppDataSource.manager;
         const limit: number = (req.limit || parseInt(process.env.API_ROOMS_LIMIT as string)) || 10;
         const page: number = req.page || 1;

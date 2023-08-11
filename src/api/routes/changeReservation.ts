@@ -22,9 +22,8 @@ const RouteChangeReservation = (router: IRouter) => {
             to: new Date(req.body.to as string),
             places: parseInt(req.body.places as string),
             reservationId: parseInt(req.body.reservationId as string),
-            user: res.locals.user
         }
-        const reservation: reservationChangeResponse|false = await controller.change(data);
+        const reservation: reservationChangeResponse|false = await controller.change(data, res.locals.user);
         return res.status(422).send(!reservation ? ErrorResponse(422, 'ERROR_CHANGING_RESERVATION') : ApiResponse(reservation));
 
     });

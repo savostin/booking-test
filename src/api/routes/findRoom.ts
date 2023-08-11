@@ -24,7 +24,7 @@ const RouteFindRoom = (router: IRouter) => {
             // TODO add order by and desc
             // TODO room and hotel facilities
         }
-        return res.send(ApiResponse(await controller.find(search)));
+        return res.send(ApiResponse(await controller.find(search, res.locals.user)));
 
     });
 

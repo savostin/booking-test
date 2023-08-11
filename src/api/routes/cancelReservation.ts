@@ -18,9 +18,8 @@ const RouteCancelReservation = (router: IRouter) => {
         const controller: ControllerReservation = new ControllerReservation();
         const data: reservationCancelRequest = {
             reservationId: parseInt(req.body.reservationId as string),
-            user: res.locals.user
         }
-        const reservation: reservationCancelResponse|false = await controller.cancel(data);
+        const reservation: reservationCancelResponse|false = await controller.cancel(data, res.locals.user);
         return res.status(422).send(!reservation ? ErrorResponse(422, 'ERROR_CANCELLING_RESERVATION') : ApiResponse(reservation));
 
     });

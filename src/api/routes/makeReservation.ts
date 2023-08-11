@@ -22,9 +22,8 @@ const RouteMakeReservation = (router: IRouter) => {
             to: new Date(req.body.to as string),
             places: parseInt(req.body.places as string),
             roomId: parseInt(req.body.roomId as string),
-            user: res.locals.user
         }
-        const room: reservationMakeResponse|false = await controller.make(data);
+        const room: reservationMakeResponse|false = await controller.make(data, res.locals.user);
         return res.status(422).send(!room ? ErrorResponse(422, 'ERROR_CREATING_RESERVATION') : ApiResponse(room));
 
     });

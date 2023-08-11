@@ -2,6 +2,7 @@ import { Router } from 'express';
 import RouteGroup from 'express-route-grouping';
 import { NextFunction, Request, Response } from 'express';
 import swaggerUi from "swagger-ui-express";
+import { Route } from "tsoa";
 
 import { ErrorResponse } from '../responses';
 import { RouteFindRoom } from './findRoom';
@@ -12,7 +13,8 @@ import { RouteCancelReservation } from './cancelReservation';
 
 const root = new RouteGroup('/', Router());
 
-root.group((process.env.APP_VERSION as string), api => {
+
+root.group(`v${process.env.APP_VERSION_SHORT as string}`, api => {
     api.group('room', req => {
         RouteFindRoom(req);
     })
@@ -23,7 +25,7 @@ root.group((process.env.APP_VERSION as string), api => {
     })
 
     api.get('swagger.json', (req: Request, res: Response, next: NextFunction) => {
-        res.sendFile(`${process.env.APP_VERSION}.json`, { root: './src/api/swagger/' });
+        res.sendFile(`v${process.env.APP_VERSION_SHORT}.json`, { root: './src/api/swagger/' });
     })
 
     api.use(
@@ -31,7 +33,7 @@ root.group((process.env.APP_VERSION as string), api => {
         swaggerUi.serve,
         swaggerUi.setup(undefined, {
             swaggerOptions: {
-                url: `/api/${process.env.APP_VERSION}/swagger.json`,
+                url: `/api/v${process.env.APP_VERSION_SHORT}/swagger.json`,
             },
         })
     );

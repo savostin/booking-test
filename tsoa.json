@@ -2,8 +2,18 @@
     "entryFile": "src/index.ts",
     "noImplicitAdditionalProperties": "throw-on-extras",
     "spec": {
+        "securityDefinitions": {
+            "apiKey": {
+                "type": "apiKey",
+                "name": "X-API-KEY",
+                "in": "header"
+            }
+        },
         "outputDirectory": "src/api/swagger",
-        "specFileBaseName": "1.0.1",
+        "specFileBaseName": "v1",
         "specVersion": 3
+    },
+    "routes": {
+        "authenticationModule": "./api/middlewares/auth.ts"
     }
 }
