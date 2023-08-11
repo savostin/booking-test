@@ -8,9 +8,9 @@ import Logger from './logger';
 import Router from './api/routes';
 import { errorHandler, apiHandlerBefore } from './api/middlewares';
 import { InitDemoData } from "./database/init.demo";
-
+import { Marked } from "marked";
 import { AppDataSource } from "./database";
-
+import { Request, Response } from "express";
 
 const log = Logger();
 
@@ -24,8 +24,14 @@ const WEB_PORT: number = parseInt(process.env.WEB_PORT as string, 10);
 const app: Application = express();
 app.use(helmet());
 app.use(cors());
-app.use(express.static('public'));
 app.use(express.json());
+app.get('/', async (req: Request, res: Response) => {
+    fs.readFile('./README.md', 'utf8')
+        .then(data => {
+            const marked = new Marked();
+            res.send(marked.parse(data.toString()));
+        });
+});
 app.use(apiHandlerBefore);
 app.use(`/api`, Router);
 app.use(errorHandler);
