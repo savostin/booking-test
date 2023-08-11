@@ -20,7 +20,7 @@ const demoParams = {
         max: 10
     },
     users: 10,
-    constKey: 'd4d507545d2e0be371bdea707c814c830c6f54baf3bef716e2f9e90a2bd67e4a',
+    constKey: process.env.USER_CONST_KEY as string,
     names: {
         first: ['John', 'Mike', 'Tim', 'Emma', 'Andrew', 'Eleonora', 'Jack', 'Thomas', 'Amelia', 'Noah', 'George', 'Jacob', 'Olivia'],
         last: ['Doe', 'Smith', 'Williams', 'Allen', 'Martin', 'Cooper', 'Anderson', 'Lee', 'Carter', 'Adams', 'Hughes', 'Hill', 'Campbell']
