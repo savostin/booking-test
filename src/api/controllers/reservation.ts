@@ -1,6 +1,6 @@
-import { Get, Route } from "tsoa";
+import { Put, Post, Route } from "tsoa";
 import { Room } from "../../models/room";
-import { Reservation } from "../../models/reservation";
+import { ReservaionStatus, Reservation } from "../../models/reservation";
 import { body } from "express-validator";
 import { AppDataSource, Brackets } from "../../database";
 import { User } from "../../models/user";
@@ -37,6 +37,7 @@ export interface reservationChangeRequest {
     to: Date;
     places: number,
     reservationId: number,
+    user: User,
 }
 
 export interface reservationChangeResponse {
@@ -59,9 +60,25 @@ export const reservationChangeValidator = [
 
 
 
+
+export interface reservationCancelRequest {
+    reservationId: number,
+    user: User,
+}
+
+export interface reservationCancelResponse {
+    result: Reservation
+}
+
+export const reservationCancelValidator = [
+    body("reservationId").exists().isInt({ gt: 0 }),
+];
+
+
+
 @Route("reservation")
 export class ControllerReservation {
-    @Get("make")
+    @Put("make")
     public async make(req: reservationMakeRequest): Promise<reservationMakeResponse | false> {
         const manager = AppDataSource.manager;
         try {
@@ -79,7 +96,7 @@ export class ControllerReservation {
                             .orWhere('toDate BETWEEN DATE(:from) AND DATE(:to)', { from: req.from.toISOString(), to: req.to.toISOString() })
                     })
                     )
-                    .andWhere('status NOT IN (:...status)', { status: ['CANCELLED', 'CREATED'] })
+                    .andWhere('status NOT IN (:...status)', { status: [ReservaionStatus.CANCELLED, ReservaionStatus.CREATED] })
                     .getQuery()}`)
                 .cache(false)
                 .getOneOrFail();
@@ -94,19 +111,20 @@ export class ControllerReservation {
                 await manager.save(reservation);
                 return { result: reservation };
             }
-        } catch (err) { 
+        } catch (err) {
             console.log(err);
         }
         return false;
     }
 
-    @Get("change")
+    @Post("change")
     public async change(req: reservationChangeRequest): Promise<reservationChangeResponse | false> {
         const manager = AppDataSource.manager;
         try {
             const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation1')
                 .innerJoin('reservation1.room', 'room')
                 .where("reservation1.id = :id", { id: req.reservationId })
+                .andWhere('reservation1.userId = :user', { user: req.user.id })
                 .andWhere("status = 'CREATED'")
                 .andWhere("room.places >= :places", { places: req.places })
                 .andWhere(db => `NOT EXISTS ${db.subQuery()
@@ -119,7 +137,7 @@ export class ControllerReservation {
                             .orWhere('toDate BETWEEN DATE(:from) AND DATE(:to)', { from: req.from.toISOString(), to: req.to.toISOString() })
                     })
                     )
-                    .andWhere('status NOT IN (:...status)', { status: ['CANCELLED', 'CREATED'] })
+                    .andWhere('status NOT IN (:...status)', { status: [ReservaionStatus.CANCELLED, ReservaionStatus.CREATED] })
                     .getQuery()}`)
                 .cache(false)
                 .getOneOrFail();
@@ -131,7 +149,29 @@ export class ControllerReservation {
                 await manager.save(reservation);
                 return { result: reservation };
             }
-        } catch (err) { 
+        } catch (err) {
+            console.log(err);
+        }
+        return false;
+    }
+
+    @Post("cancel")
+    public async cancel(req: reservationCancelRequest): Promise<reservationCancelResponse | false> {
+        const manager = AppDataSource.manager;
+        try {
+            const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation')
+                .where("reservation.id = :id", { id: req.reservationId })
+                .andWhere('reservation.userId = :user', { user: req.user.id })
+                .andWhere("status NOT IN (:...status)", { status: [ReservaionStatus.FULFILLED] })
+                .cache(false)
+                .getOneOrFail();
+
+            if (reservation) {
+                reservation.status = ReservaionStatus.CANCELLED;
+                await manager.save(reservation);
+                return { result: reservation };
+            }
+        } catch (err) {
             console.log(err);
         }
         return false;

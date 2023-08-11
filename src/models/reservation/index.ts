@@ -18,7 +18,8 @@ export enum ReservaionStatus {
     CREATED = 'CREATED',
     PAID = 'PAID',
     CONFIRMED = 'CONFIRMED',
-    CANCELLED = 'CANCELLED'
+    CANCELLED = 'CANCELLED',
+    FULFILLED = 'FULFILLED'
 }
 
 @Entity()

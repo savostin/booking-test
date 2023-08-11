@@ -7,6 +7,7 @@ import { ErrorResponse } from '../responses';
 import { RouteFindRoom } from './findRoom';
 import { RouteMakeReservation } from './makeReservation'
 import { RouteChangeReservation } from './changeReservation';
+import { RouteCancelReservation } from './cancelReservation';
 
 
 const root = new RouteGroup('/', Router());
@@ -18,6 +19,7 @@ root.group((process.env.APP_VERSION as string), api => {
     api.group('reservation', req => {
         RouteMakeReservation(req);
         RouteChangeReservation(req);
+        RouteCancelReservation(req);
     })
 
     api.get('swagger.json', (req: Request, res: Response, next: NextFunction) => {

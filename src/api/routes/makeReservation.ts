@@ -9,7 +9,7 @@ import { Room } from '../../models/room';
 
 
 const RouteMakeReservation = (router: IRouter) => {
-    router.post('make', authHandler, reservationMakeValidator, async (req: Request, res: Response, next: NextFunction) => {
+    router.put('make', authHandler, reservationMakeValidator, async (req: Request, res: Response, next: NextFunction) => {
         const invalid = validationResult(req);
         if (!invalid.isEmpty()) {
             console.log(invalid.array())
