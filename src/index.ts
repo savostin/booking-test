@@ -29,7 +29,10 @@ app.get('/', async (req: Request, res: Response) => {
     fs.readFile('./README.md', 'utf8')
         .then(data => {
             const marked = new Marked();
-            res.send(marked.parse(data.toString()));
+            const parsed = marked.parse(data.toString()) as string;
+            res.send(parsed
+                .replace(/\$\{([A-Z_-]+)\}/g, (x: string, p1: string): string => process.env[p1] as string ?? x)
+            );
         });
 });
 app.use(apiHandlerBefore);

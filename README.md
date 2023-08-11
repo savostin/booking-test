@@ -18,12 +18,16 @@ Using Typescript - nice welcome.
 
 ### Deployment process
 - Install Docker
+- Clone repo
 - Create .env file in the root dir. See [.env.example](/.env.example)
 - Run 
 ```
 docker build -t booking .
 docker run -p ${LOCAL_PORT}:${WEB_PORT} --name booking booking
 ```
+- As an alternative use [Devcontainers for VSCode](https://code.visualstudio.com/docs/devcontainers/containers)
+
+### How to use
 - The API endpoint is /api/v1/
 - Swagger UI is on [http://localhost:${LOCAL_PORT}/api/v1/docs/](/api/v1/docs/)
 
