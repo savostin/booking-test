@@ -31,7 +31,7 @@ app.use(errorHandler);
 
 /** For testing purpose - delete database each start: */
 import fs from "node:fs/promises"
-fs.unlink(process.env.DB_DATABASE as string).then(() => {
+fs.unlink(process.env.DB_DATABASE as string).finally(() => {
 
     AppDataSource.initialize()
         .then(() => InitDemoData())

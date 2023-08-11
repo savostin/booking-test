@@ -1,1 +1,2 @@
-# booking-test
+# Test task
+## Booking API
