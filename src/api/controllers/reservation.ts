@@ -77,7 +77,7 @@ export const reservationCancelValidator = [
 export class ControllerReservation {
     @Security("apiKey")
     @Put("make")
-    public async make(@Body() req: reservationMakeRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationMakeResponse | false> {
+    public async make(@Body() req: reservationMakeRequest, user: User): Promise<reservationMakeResponse | false> {
         const manager = AppDataSource.manager;
         try {
 
@@ -117,13 +117,13 @@ export class ControllerReservation {
 
     @Security("apiKey")
     @Post("change")
-    public async change(@Body() req: reservationChangeRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationChangeResponse | false> {
+    public async change(@Body() req: reservationChangeRequest, user: User): Promise<reservationChangeResponse | false> {
         const manager = AppDataSource.manager;
         try {
             const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation1')
                 .innerJoin('reservation1.room', 'room')
                 .where("reservation1.id = :id", { id: req.reservationId })
-                .andWhere('reservation1.userId = :user', { user: user?.id })
+                .andWhere('reservation1.userId = :user', { user: user.id })
                 .andWhere("status = 'CREATED'")
                 .andWhere("room.places >= :places", { places: req.places })
                 .andWhere(db => `NOT EXISTS ${db.subQuery()
@@ -156,12 +156,12 @@ export class ControllerReservation {
 
     @Security("apiKey")
     @Post("cancel")
-    public async cancel(@Body() req: reservationCancelRequest, @Query() @Hidden() user: User | undefined = undefined): Promise<reservationCancelResponse | false> {
+    public async cancel(@Body() req: reservationCancelRequest, user: User): Promise<reservationCancelResponse | false> {
         const manager = AppDataSource.manager;
         try {
             const reservation: Reservation = await manager.createQueryBuilder(Reservation, 'reservation')
                 .where("reservation.id = :id", { id: req.reservationId })
-                .andWhere('reservation.userId = :user', { user: user?.id })
+                .andWhere('reservation.userId = :user', { user: user.id })
                 .andWhere("status NOT IN (:...status)", { status: [ReservaionStatus.FULFILLED] })
                 .cache(false)
                 .getOneOrFail();
